@@ -1,85 +1,62 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="referrer" content="no-referrer" />
-  <title>المشغّل</title>
+  <title>المشغل</title>
   <style>
-    html,body{height:100%;margin:0;background:#000;color:#fff;font-family:system-ui,Segoe UI,Roboto,Arial}
-    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px}
-    video{width:min(100%,960px);background:#000;border-radius:12px;outline:none}
-    .bar{width:min(100%,960px);margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-    .title{opacity:.9}
-    a.btn{background:#1976d2;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:700}
+    body { margin:0; background:#000; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
+    video { width:100%; max-width:900px; background:#000; border-radius:10px; }
+    .actions{margin-top:8px;display:flex;gap:10px;}
+    a.btn{padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
+    .btn-close{background:#ff5252;color:#fff;}
+    .btn-open{background:#1976d2;color:#fff;}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-  <div class="wrap">
-    <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
-    <div class="bar">
-      <div class="title" id="t">تشغيل…</div>
-      <a id="raw" class="btn" target="_blank" rel="noopener">فتح المصدر</a>
-    </div>
+  <video id="v" controls autoplay playsinline webkit-playsinline></video>
+  <div class="actions">
+    <a id="srcBtn" class="btn btn-open" target="_blank">فتح المصدر</a>
+    <a href="index.html" class="btn btn-close">إغلاق</a>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    // استلام رابط البث من كويَري ?src=
-    const p = new URLSearchParams(location.search);
-    let src = p.get('src');
-    const title = decodeURIComponent(p.get('title') || '') || 'قناة مباشرة';
+    const q=new URLSearchParams(location.search);
+    const raw=q.get("src")||"";
+    const title=q.get("title")||"قناة مباشرة";
+    document.title=title;
+    document.getElementById("srcBtn").href=raw;
 
-    const video = document.getElementById('v');
-    const titleEl = document.getElementById('t');
-    const rawBtn = document.getElementById('raw');
+    const video=document.getElementById("v");
 
-    if (!src) {
-      document.body.innerHTML = '<div style="padding:20px;color:#fff">لا يوجد src في الرابط.</div>';
-    } else {
-      titleEl.textContent = title;
-      rawBtn.href = src;
-      start(src);
-    }
-
-    // لو الرابط .ts نحوّله إلى M3U8 مؤقّت
-    function toSingleM3U8(tsUrl){
-      const D=36000;
+    // لو كان الرابط TS فقط → نحوله لقائمة M3U8 مؤقتة
+    function makeM3U8(tsUrl){
       return [
-        '#EXTM3U',
-        '#EXT-X-VERSION:3',
-        `#EXT-X-TARGETDURATION:${D}`,
-        '#EXT-X-MEDIA-SEQUENCE:0',
-        `#EXTINF:${D}.0,`,
+        "#EXTM3U",
+        "#EXT-X-VERSION:3",
+        "#EXT-X-TARGETDURATION:36000",
+        "#EXT-X-MEDIA-SEQUENCE:0",
+        "#EXTINF:36000.0,",
         tsUrl,
-        '#EXT-X-ENDLIST'
-      ].join('\n');
+        "#EXT-X-ENDLIST"
+      ].join("\n");
     }
 
-    function start(u){
-      const low = u.toLowerCase();
-      let playSrc = u;
+    let finalUrl=raw;
+    if (/\.ts(\?|$)/i.test(raw)){
+      const blob=new Blob([makeM3U8(raw)],{type:"application/vnd.apple.mpegURL"});
+      finalUrl=URL.createObjectURL(blob);
+    }
 
-      if (low.endsWith('.ts')) {
-        const blob = new Blob([toSingleM3U8(u)], {type:'application/vnd.apple.mpegURL'});
-        playSrc = URL.createObjectURL(blob);
-      }
-
-      if (video.canPlayType('application/vnd.apple.mpegURL')) {
-        video.src = playSrc;
-        video.play().catch(()=>{});
-        return;
-      }
-      if (window.Hls && Hls.isSupported()) {
-        const hls = new Hls({enableWorker:true});
-        hls.loadSource(playSrc);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>video.play().catch(()=>{}));
-        return;
-      }
-      // آخر حل
-      video.src = playSrc;
-      video.play().catch(()=>{});
+    if(video.canPlayType("application/vnd.apple.mpegURL")){
+      video.src=finalUrl;
+    }else if(Hls.isSupported()){
+      const hls=new Hls();
+      hls.loadSource(finalUrl);
+      hls.attachMedia(video);
+    }else{
+      video.src=raw;
     }
   </script>
 </body>
