@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>مشغل M3U8</title>
 
-  <!-- مكتبة Video.js -->
   <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
   <style>
-    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:sans-serif}
-    #title{padding:10px;text-align:center;font-weight:bold;background:#111;color:#fff}
-    .video-js{width:100%;height:100vh;}
+    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui, sans-serif}
+    #title{padding:10px;text-align:center;font-weight:bold;background:#111}
+    .video-js{width:100%;height:calc(100vh - 48px);}
   </style>
 </head>
 <body>
@@ -18,7 +17,6 @@
   <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" playsinline webkit-playsinline></video>
 
   <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-hls@latest/dist/videojs-contrib-hls.js"></script>
   <script>
     const p = new URL(location.href).searchParams;
     const src = p.get('src');
@@ -26,16 +24,15 @@
     document.getElementById('title').textContent = title;
 
     if(src){
-      const player = videojs('my-video', {
+      videojs('my-video', {
         autoplay: true,
         controls: true,
         preload: 'auto',
         fluid: true,
-        sources: [{
-          src: src,
-          type: 'application/x-mpegURL'
-        }]
+        sources: [{ src, type: 'application/x-mpegURL' }]
       });
+    }else{
+      document.getElementById('title').textContent = 'لا يوجد رابط بث';
     }
   </script>
 </body>
