@@ -24,7 +24,6 @@
     header{ text-align:center; margin-bottom:14px; }
     header h1{ margin:0 0 4px; font-size:clamp(28px,4.5vw,62px); font-weight:800; }
     header .sub{ opacity:.85; font-size:clamp(16px,2.2vw,24px); }
-
     .stack{ width:min(100%,var(--max-w)); margin-inline:auto; display:flex; flex-direction:column; gap:var(--v-gap); }
     .tile{ position:relative; display:block; overflow:hidden; border-radius:var(--radius); background:transparent; outline:none; }
     .thumb{ display:block; width:100%; height:auto; object-fit:contain; background:transparent; border-radius:inherit; }
@@ -37,16 +36,15 @@
     main{ width:100%; scroll-behavior:auto; overscroll-behavior:contain; }
     a, .tile { -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
-    /* طبقة المشغل */
+    /* طبقة المشغّل */
     .player-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:9999; }
     .player-card{ width:min(100%,900px); background:#000; border-radius:16px; padding:12px; }
     .player-card video{ width:100%; height:auto; border-radius:12px; background:#000; }
-    .player-actions{ display:flex; gap:8px; justify-content:space-between; margin-top:8px; align-items:center; color:#fff; flex-wrap:wrap; }
+    .player-actions{ display:flex; gap:8px; justify-content:space-between; margin-top:8px; align-items:center; color:#fff; }
     .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700 }
     .btn-close{ background:#ff5252; color:#fff; }
     .btn-open-ext{ background:#1976d2; color:#fff; }
     .title{ font-weight:700; }
-    .err{ color:#ffb3b3; font-size:14px; margin-top:6px; display:none; }
   </style>
 </head>
 <body>
@@ -58,12 +56,12 @@
 
     <main>
       <div class="stack" id="stack" role="list">
-        <!-- لافتة -->
+        <!-- لافتة افتتاحية -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation">
           <img class="thumb" loading="lazy" src="https://www4.0zz0.com/2024/02/01/09/100522793.png" alt="" />
         </div>
 
-        <!-- 1 - 5 -->
+        <!-- القنوات 1 - 5 -->
         <a class="tile link" href="go:1"  tabindex="0" aria-label="قناة 1"><img class="thumb" loading="lazy" src="https://i.suar.me/VWaMw/l" alt="قناة 1" /></a>
         <a class="tile link" href="go:2"  tabindex="0" aria-label="قناة 2"><img class="thumb" loading="lazy" src="https://i.suar.me/QJQKW/l" alt="قناة 2" /></a>
         <a class="tile link" href="go:3"  tabindex="0" aria-label="قناة 3"><img class="thumb" loading="lazy" src="https://i.suar.me/9NjMe/l" alt="قناة 3" /></a>
@@ -76,7 +74,7 @@
         <a class="tile link" href="go:13" tabindex="0" aria-label="قناة 13"><img class="thumb" loading="lazy" src="https://i.suar.me/jxBMz/l" alt="قناة 13" /></a>
         <a class="tile link" href="go:14" tabindex="0" aria-label="قناة 14"><img class="thumb" loading="lazy" src="https://i.suar.me/LV1xG/l" alt="قناة 14" /></a>
 
-        <!-- لافتة -->
+        <!-- لافتة وسط -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation">
           <img class="thumb" loading="lazy" src="https://www4.0zz0.com/2024/02/01/09/194995613.png" alt="" />
         </div>
@@ -129,30 +127,29 @@
     <footer>Abu Faris TV Sport</footer>
   </div>
 
-  <!-- HLS (للـ Android/سطح المكتب) -->
+  <!-- HLS -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <!-- مشغّل الفيديو -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
     <div class="player-card">
-      <video id="player" controls playsinline webkit-playsinline preload="metadata" muted></video>
+      <video id="player" controls playsinline webkit-playsinline preload="metadata"></video>
       <div class="player-actions">
         <span class="title" id="chanTitle"></span>
         <div>
           <a id="openExternal" class="btn btn-open-ext" target="_blank" rel="noopener">فتح في نافذة</a>
           <button class="btn btn-close" id="closeBtn">إغلاق</button>
         </div>
-        <div class="err" id="errBox"></div>
       </div>
     </div>
   </div>
 
   <script>
-    /* رابط الـWorker الخاص بك */
+    /* عدّل هذا لو غيّرت اسم الWorker */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
     const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
 
-    /* روابط TS الخام */
+    /* روابطك .ts */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.ts",
       2:"http://storatv.com/live/0543539887/2280625079/483657.ts",
@@ -184,7 +181,6 @@
       28:"http://storatv.com/live/0543539887/2280625079/763550.ts"
     };
 
-    /* نحول كل رابط عبر البروكسي */
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
     const overlay = document.getElementById('overlay');
@@ -192,74 +188,61 @@
     const closeBtn = document.getElementById('closeBtn');
     const titleEl = document.getElementById('chanTitle');
     const openExt = document.getElementById('openExternal');
-    const errBox = document.getElementById('errBox');
-
     let hlsInstance=null, blobUrl=null;
 
     /* تركيز أول عنصر */
     (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
 
-    /* فتح القناة */
+    /* فتح القناة عند النقر */
     document.addEventListener('click',(e)=>{
       const a=e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
       e.preventDefault();
       const id=a.getAttribute('href').split(':')[1];
       const url=STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
       titleEl.textContent=a.getAttribute('aria-label')||('قناة '+id);
-      openExt.href=url;
+
       playUrl(url);
     });
-
-    function showError(msg){
-      errBox.textContent = msg || 'تعذر تشغيل البث.';
-      errBox.style.display = 'block';
-    }
-    function clearError(){ errBox.textContent=''; errBox.style.display='none'; }
 
     function playUrl(url){
       overlay.style.display='flex';
       cleanupPlayer();
-      clearError();
 
       const isM3U8=/\.m3u8(\?|$)/i.test(url);
       const isTS=/\.ts(\?|$)/i.test(url);
+
+      /* مهم: زر "فتح في نافذة" يفتح صفحة player.html مع تمرير الرابط */
+      const playerPage = `player.html?src=${encodeURIComponent(url)}`;
+      openExt.setAttribute('href', playerPage);
+      openExt.setAttribute('target', '_blank');
+      openExt.setAttribute('rel', 'noopener');
 
       if(isTS){
         const m3u8Text=makeSingleM3U8(url);
         const blob=new Blob([m3u8Text],{type:'application/vnd.apple.mpegURL'});
         blobUrl=URL.createObjectURL(blob);
-        startHls(blobUrl); return;
+        startHls(blobUrl); 
+        return;
       }
       if(isM3U8){ startHls(url); return; }
 
-      // fallback عادي
-      videoEl.src=url;
-      videoEl.play().catch(()=>showError('الرجاء الضغط على زر التشغيل لإزالة منع التشغيل التلقائي.'));
+      videoEl.src=url; videoEl.play().catch(()=>{});
     }
 
     function startHls(src){
-      // iOS/Safari يدعم m3u8 مباشرة
       if(videoEl.canPlayType('application/vnd.apple.mpegURL')){
-        videoEl.src=src;
-        videoEl.play().catch(()=>showError('اضغط تشغيل لبدء البث.'));
+        videoEl.src=src; videoEl.play().catch(()=>{});
       }else if(window.Hls && Hls.isSupported()){
         hlsInstance=new Hls({enableWorker:true});
         hlsInstance.loadSource(src);
         hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoEl.play().catch(()=>showError('اضغط تشغيل لبدء البث.')));
-
-        hlsInstance.on(Hls.Events.ERROR, (_, data)=>{
-          if (data && data.fatal) showError('حدث خطأ أثناء التشغيل.');
-        });
-      }else{
-        videoEl.src=src;
-        videoEl.play().catch(()=>showError('اضغط تشغيل لبدء البث.'));
-      }
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoEl.play().catch(()=>{}));
+      }else{ videoEl.src=src; videoEl.play().catch(()=>{}); }
     }
 
     /* نصنع قائمة تشغيل مؤقتة من ملف TS واحد */
     function makeSingleM3U8(tsUrl){
-      const TARGET=36000; /* تقريبًا 10 ساعات */
+      const TARGET=36000; /* 10 ساعات تقريبًا */
       return [
         '#EXTM3U',
         '#EXT-X-VERSION:3',
