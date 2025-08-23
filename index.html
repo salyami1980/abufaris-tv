@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <title>القنوات الرياضية – TV</title>
+
   <style>
     :root{ --safe-pad:32px; --radius:22px; --focus-ring:5px; --accent:#ffc107; --v-gap:16px; --max-w:600px; }
     @media (min-width:2560px){ :root{ --safe-pad:44px; --max-w:1100px; } }
@@ -31,13 +32,19 @@
     /* طبقة المشغّل */
     .player-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:9999; }
     .player-card{ width:min(100%,900px); background:#000; border-radius:16px; padding:12px; }
-    .player-card video{ width:100%; height:auto; border-radius:12px; background:#000; }
     .player-actions{ display:flex; gap:8px; justify-content:space-between; margin-top:8px; align-items:center; color:#fff; }
     .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
     .btn-close{ background:#ff5252; color:#fff; }
     .btn-open-ext{ background:#1976d2; color:#fff; }
     .title{ font-weight:700; }
+
+    /* Video.js يملأ البطاقة */
+    .video-js { width:100%; height:60vh; border-radius:12px; background:#000; }
+    @media (min-height:900px){ .video-js{ height:70vh; } }
   </style>
+
+  <!-- Video.js (مشغّل M3U8) -->
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
 </head>
 <body>
   <div class="page">
@@ -119,13 +126,10 @@
     <footer>Abu Faris TV Sport</footer>
   </div>
 
-  <!-- Hls.js -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
   <!-- طبقة المشغّل -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
     <div class="player-card">
-      <video id="player" controls playsinline webkit-playsinline preload="metadata"></video>
+      <video id="player" class="video-js vjs-default-skin" controls playsinline webkit-playsinline preload="metadata"></video>
       <div class="player-actions">
         <span class="title" id="chanTitle"></span>
         <div>
@@ -136,11 +140,15 @@
     </div>
   </div>
 
-  <script>
-    /* ===== إعدادات الـWorker (حدّث الدومين إن غيّرته) ===== */
-    const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
+  <!-- Video.js -->
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
-    /* ===== روابطك بصيغة M3U8 (كما طلبت) ===== */
+  <script>
+    /* ===== إعدادات Cloudflare Worker ===== */
+    const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
+    const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
+
+    /* ===== جدول القنوات (1–28) بصيغة M3U8 ===== */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
       2:"http://storatv.com/live/0543539887/2280625079/483657.m3u8",
@@ -171,23 +179,24 @@
       27:"http://storatv.com/live/0543539887/2280625079/763547.m3u8",
       28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
-
-    /* نمرّرها عبر الوِركر مع ref=storatav */
-    const prox = (u) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(u)}&ref=${encodeURIComponent('http://storatv.com/')}`;
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
+    /* عناصر الواجهة */
     const overlay = document.getElementById('overlay');
-    const videoEl  = document.getElementById('player');
-    const closeBtn = document.getElementById('closeBtn');
     const titleEl  = document.getElementById('chanTitle');
     const openExt  = document.getElementById('openExternal');
-    let hls = null;
+    const closeBtn = document.getElementById('closeBtn');
 
+    /* Video.js instance */
+    let vjs = null;
+
+    /* تركيز أول عنصر */
     (function () {
       const first = document.querySelector('.tile.link');
       if (first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }
     })();
 
+    /* فتح القناة */
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a.tile.link[href^="go:"]'); if (!a) return;
       e.preventDefault();
@@ -199,30 +208,29 @@
 
     function playUrl(url){
       overlay.style.display = 'flex';
-      cleanup();
+      cleanupPlayer();
 
+      /* رابط فتح في نافذة */
       const base = location.origin + location.pathname.replace(/[^/]+$/, '');
-      openExt.href = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
-      openExt.target = '_blank'; openExt.rel = 'noopener';
+      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent || 'قناة')}`;
+      openExt.href = playerPage;
 
-      if (videoEl.canPlayType('application/vnd.apple.mpegURL')) {
-        videoEl.src = url;
-        videoEl.play().catch(()=>{});
-      } else if (window.Hls && Hls.isSupported()){
-        hls = new Hls({ enableWorker:true });
-        hls.loadSource(url);
-        hls.attachMedia(videoEl);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(()=>{}));
-      } else {
-        videoEl.src = url;
-        videoEl.play().catch(()=>{});
-      }
+      /* تهيئة Video.js كمشغّل M3U8 */
+      vjs = videojs('player', {
+        autoplay: true,
+        controls: true,
+        preload: 'auto',
+        fluid: true,
+        sources: [{ src: url, type: 'application/x-mpegURL' }]
+      });
     }
 
-    function cleanup(){
-      try{ if (hls){ hls.destroy(); hls=null; } videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load(); }catch{}
+    function cleanupPlayer(){
+      try{
+        if (vjs){ vjs.dispose(); vjs = null; }
+      }catch{}
     }
-    function closePlayer(){ overlay.style.display='none'; cleanup(); }
+    function closePlayer(){ overlay.style.display='none'; cleanupPlayer(); }
     closeBtn.addEventListener('click', closePlayer);
     overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePlayer(); });
     document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closePlayer(); });
