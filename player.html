@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشغل البث</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      max-height: 85vh;
+      background: #000;
+    }
+    a.back {
+      margin-top: 12px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: #ffc107;
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <video id="player" controls autoplay playsinline webkit-playsinline></video>
+  <a href="index.html" class="back">⬅ العودة للرئيسية</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const src = params.get("src");
+    const video = document.getElementById("player");
+
+    if (!src) {
+      document.body.innerHTML = "<h2>❌ لا يوجد رابط بث</h2><a href='index.html' class='back'>⬅ العودة</a>";
+    } else {
+      if (src.endsWith(".m3u8") || src.includes(".ts")) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+          video.play().catch(()=>{});
+        } else if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(()=>{});
+          });
+        } else {
+          video.src = src;
+          video.play().catch(()=>{});
+        }
+      } else {
+        video.src = src;
+        video.play().catch(()=>{});
+      }
+    }
+  </script>
+</body>
+</html>
 
