@@ -4,101 +4,82 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="referrer" content="no-referrer" />
-  <title>مشغّل القناة</title>
+  <title>المشغّل</title>
   <style>
-    html,body{height:100%;margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Kufi Arabic","Noto Sans Arabic",Arial,sans-serif}
-    .wrap{min-height:100%;display:flex;flex-direction:column}
-    header{padding:10px 14px;background:#111;display:flex;gap:10px;align-items:center;justify-content:space-between}
-    header .title{font-weight:800}
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:8px}
-    video{width:min(100%,1000px);height:auto;background:#000;border-radius:12px;outline:none}
-    .err{max-width:900px;margin:24px auto;background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:14px;line-height:1.8}
-    a.btn{display:inline-block;background:#1976d2;color:#fff;text-decoration:none;border-radius:10px;padding:8px 12px}
+    html,body{height:100%;margin:0;background:#000;color:#fff;font-family:system-ui,Segoe UI,Roboto,Arial}
+    .wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+    video{width:min(100%,960px);background:#000;border-radius:12px;outline:none}
+    .bar{width:min(100%,960px);margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .title{opacity:.9}
+    a.btn{background:#1976d2;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:700}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div class="title">مشغّل القناة</div>
-      <a href="index.html" class="btn">العودة</a>
-    </header>
-    <main>
-      <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
-    </main>
-    <div id="error" class="err" style="display:none"></div>
+    <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
+    <div class="bar">
+      <div class="title" id="t">تشغيل…</div>
+      <a id="raw" class="btn" target="_blank" rel="noopener">فتح المصدر</a>
+    </div>
   </div>
 
   <script>
-    // اقرأ رابط البث من ?src=
-    const qp = new URLSearchParams(location.search);
-    let src = qp.get('src');
+    // استلام رابط البث من كويَري ?src=
+    const p = new URLSearchParams(location.search);
+    let src = p.get('src');
+    const title = decodeURIComponent(p.get('title') || '') || 'قناة مباشرة';
 
-    // إن لم يوجد src أعرض رسالة
+    const video = document.getElementById('v');
+    const titleEl = document.getElementById('t');
+    const rawBtn = document.getElementById('raw');
+
     if (!src) {
-      showErr('لا يوجد رابط بث (src). ارجع للقائمة وحاول من جديد.');
+      document.body.innerHTML = '<div style="padding:20px;color:#fff">لا يوجد src في الرابط.</div>';
     } else {
-      // فك ترميز مرة واحدة (لأن index.html يرسل رابطًا مشفّرًا)
-      try { src = decodeURIComponent(src); } catch {}
-      play(src);
+      titleEl.textContent = title;
+      rawBtn.href = src;
+      start(src);
     }
 
-    function showErr(msg, extra=''){
-      const box = document.getElementById('error');
-      box.style.display = 'block';
-      box.innerHTML = `<b>تعذّر التشغيل</b><br>${msg}${extra ? '<br><small>'+extra+'</small>':''}`;
-    }
-
-    function makeSingleM3U8(tsUrl){
-      const TARGET = 36000; // 10 ساعات
+    // لو الرابط .ts نحوّله إلى M3U8 مؤقّت
+    function toSingleM3U8(tsUrl){
+      const D=36000;
       return [
         '#EXTM3U',
         '#EXT-X-VERSION:3',
-        `#EXT-X-TARGETDURATION:${TARGET}`,
+        `#EXT-X-TARGETDURATION:${D}`,
         '#EXT-X-MEDIA-SEQUENCE:0',
-        `#EXTINF:${TARGET}.0,`,
+        `#EXTINF:${D}.0,`,
         tsUrl,
         '#EXT-X-ENDLIST'
       ].join('\n');
     }
 
-    function play(raw){
-      const video = document.getElementById('v');
+    function start(u){
+      const low = u.toLowerCase();
+      let playSrc = u;
 
-      // إذا كان الملف .ts نحوّل لقائمة m3u8 داخلية
-      let source = raw;
-      const isTS = /\.ts(\?|$)/i.test(raw);
-      const isM3U8 = /\.m3u8(\?|$)/i.test(raw);
-
-      if (isTS){
-        const txt = makeSingleM3U8(raw);
-        const b = new Blob([txt], {type:'application/vnd.apple.mpegURL'});
-        source = URL.createObjectURL(b);
+      if (low.endsWith('.ts')) {
+        const blob = new Blob([toSingleM3U8(u)], {type:'application/vnd.apple.mpegURL'});
+        playSrc = URL.createObjectURL(blob);
       }
 
-      // iOS/Safari
-      if (video.canPlayType('application/vnd.apple.mpegURL')){
-        video.src = source;
+      if (video.canPlayType('application/vnd.apple.mpegURL')) {
+        video.src = playSrc;
         video.play().catch(()=>{});
         return;
       }
-
-      // باقي المتصفحات
-      if (window.Hls && Hls.isSupported()){
+      if (window.Hls && Hls.isSupported()) {
         const hls = new Hls({enableWorker:true});
-        hls.loadSource(source);
+        hls.loadSource(playSrc);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
-        hls.on(Hls.Events.ERROR, (ev,data)=>{
-          if (data && data.fatal){
-            showErr('خطأ داخلي في HLS أثناء التشغيل.', JSON.stringify(data));
-          }
-        });
-      } else {
-        // fallback أخير
-        video.src = source;
-        video.play().catch(()=>{});
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>video.play().catch(()=>{}));
+        return;
       }
+      // آخر حل
+      video.src = playSrc;
+      video.play().catch(()=>{});
     }
   </script>
 </body>
