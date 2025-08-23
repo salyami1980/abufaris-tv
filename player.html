@@ -26,23 +26,17 @@
     const p = new URL(location.href).searchParams;
     const src = p.get('src');
     const title = p.get('title') || 'قناة مباشرة';
-
     document.getElementById('title').textContent = title;
     document.getElementById('openSource').href = src;
 
     const v = document.getElementById('v');
-
     function start(src){
-      if (v.canPlayType('application/vnd.apple.mpegurl')) {
-        v.src = src; v.play().catch(()=>{});
-      } else if (window.Hls && Hls.isSupported()) {
+      if (v.canPlayType('application/vnd.apple.mpegurl')) { v.src = src; v.play().catch(()=>{}); }
+      else if (window.Hls && Hls.isSupported()) {
         const hls = new Hls({ enableWorker:true });
-        hls.loadSource(src);
-        hls.attachMedia(v);
+        hls.loadSource(src); hls.attachMedia(v);
         hls.on(Hls.Events.MANIFEST_PARSED, ()=> v.play().catch(()=>{}));
-      } else {
-        v.src = src; v.play().catch(()=>{});
-      }
+      } else { v.src = src; v.play().catch(()=>{}); }
     }
     if (src) start(src);
   </script>
