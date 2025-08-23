@@ -4,12 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <title>القنوات الرياضية – TV</title>
+
   <style>
     :root{ --safe-pad:32px; --radius:22px; --focus-ring:5px; --accent:#ffc107; --v-gap:16px; --max-w:600px; }
     @media (min-width:2560px){ :root{ --safe-pad:44px; --max-w:1100px; } }
-    html,body{ margin:0;height:100%;background:#212121;color:#fafafa;
+    html,body{
+      margin:0;height:100%;background:#212121;color:#fafafa;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Kufi Arabic","Noto Sans Arabic",Arial,sans-serif;
-      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overscroll-behavior:none; }
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overscroll-behavior:none;
+    }
     .page{ min-height:100%; box-sizing:border-box; padding:var(--safe-pad); display:flex; flex-direction:column; align-items:center; }
     header{ text-align:center; margin-bottom:14px; }
     header h1{ margin:0 0 4px; font-size:clamp(28px,4.5vw,62px); font-weight:800; }
@@ -19,21 +22,29 @@
     .thumb{ display:block; width:100%; height:auto; object-fit:contain; background:transparent; border-radius:inherit; }
     .tile.link:focus{ outline:none; }
     .tile.link:focus-visible::after,.tile.link[tabindex="0"]:focus::after{
-      content:""; position:absolute; inset:0; border:var(--focus-ring) solid var(--accent); border-radius:inherit; pointer-events:none; }
+      content:""; position:absolute; inset:0; border:var(--focus-ring) solid var(--accent); border-radius:inherit; pointer-events:none;
+    }
     .banner{ pointer-events:none; }
     footer{ text-align:center; margin-top:20px; opacity:.9; font-weight:700; font-size:clamp(16px,2vw,22px); }
     main{ width:100%; scroll-behavior:auto; overscroll-behavior:contain; }
     a,.tile{ -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
+    /* طبقة المشغّل */
     .player-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:9999; }
     .player-card{ width:min(100%,900px); background:#000; border-radius:16px; padding:12px; }
-    .player-card video{ width:100%; height:auto; border-radius:12px; background:#000; }
     .player-actions{ display:flex; gap:8px; justify-content:space-between; margin-top:8px; align-items:center; color:#fff; }
     .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
     .btn-close{ background:#ff5252; color:#fff; }
     .btn-open-ext{ background:#1976d2; color:#fff; }
     .title{ font-weight:700; }
+
+    /* Video.js يملأ البطاقة */
+    .video-js { width:100%; height:60vh; border-radius:12px; background:#000; }
+    @media (min-height:900px){ .video-js{ height:70vh; } }
   </style>
+
+  <!-- Video.js (مشغّل M3U8) -->
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
 </head>
 <body>
   <div class="page">
@@ -44,69 +55,81 @@
 
     <main>
       <div class="stack" id="stack" role="list">
+        <!-- لافتة افتتاحية -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation">
           <img class="thumb" loading="lazy" src="https://www4.0zz0.com/2024/02/01/09/100522793.png" alt="" />
         </div>
 
-        <!-- صور القنوات كما لديك… (أبقيتها كما أرسلت) -->
-        <a class="tile link" href="go:1"  tabindex="0" aria-label="قناة 1"><img class="thumb" loading="lazy" src="https://i.suar.me/VWaMw/l" alt="1" /></a>
-        <a class="tile link" href="go:2"  tabindex="0" aria-label="قناة 2"><img class="thumb" loading="lazy" src="https://i.suar.me/QJQKW/l" alt="2" /></a>
-        <a class="tile link" href="go:3"  tabindex="0" aria-label="قناة 3"><img class="thumb" loading="lazy" src="https://i.suar.me/9NjMe/l" alt="3" /></a>
-        <a class="tile link" href="go:4"  tabindex="0" aria-label="قناة 4"><img class="thumb" loading="lazy" src="https://i.suar.me/YJqzY/l" alt="4" /></a>
-        <a class="tile link" href="go:5"  tabindex="0" aria-label="قناة 5"><img class="thumb" loading="lazy" src="https://i.suar.me/7qOgo/l" alt="5" /></a>
+        <!-- القنوات 1 - 5 -->
+        <a class="tile link" href="go:1"  tabindex="0" aria-label="قناة 1"><img class="thumb" loading="lazy" src="https://i.suar.me/VWaMw/l" alt="قناة 1" /></a>
+        <a class="tile link" href="go:2"  tabindex="0" aria-label="قناة 2"><img class="thumb" loading="lazy" src="https://i.suar.me/QJQKW/l" alt="قناة 2" /></a>
+        <a class="tile link" href="go:3"  tabindex="0" aria-label="قناة 3"><img class="thumb" loading="lazy" src="https://i.suar.me/9NjMe/l" alt="قناة 3" /></a>
+        <a class="tile link" href="go:4"  tabindex="0" aria-label="قناة 4"><img class="thumb" loading="lazy" src="https://i.suar.me/YJqzY/l" alt="قناة 4" /></a>
+        <a class="tile link" href="go:5"  tabindex="0" aria-label="قناة 5"><img class="thumb" loading="lazy" src="https://i.suar.me/7qOgo/l" alt="قناة 5" /></a>
 
-        <a class="tile link" href="go:6" tabindex="0" aria-label="قناة 6"><img class="thumb" loading="lazy" src="https://i.suar.me/za2GV/l" alt="6" /></a>
-        <a class="tile link" href="go:7" tabindex="0" aria-label="قناة 7"><img class="thumb" loading="lazy" src="https://i.suar.me/ZPe4w/l" alt="7" /></a>
-        <a class="tile link" href="go:8" tabindex="0" aria-label="قناة 8"><img class="thumb" loading="lazy" src="https://i.suar.me/XA56X/l" alt="8" /></a>
-        <a class="tile link" href="go:9" tabindex="0" aria-label="قناة 9"><img class="thumb" loading="lazy" src="https://i.suar.me/GVzGg/l" alt="9" /></a>
-        <a class="tile link" href="go:10" tabindex="0" aria-label="قناة 10"><img class="thumb" loading="lazy" src="https://i.suar.me/y2Lmq/l" alt="10" /></a>
+        <!-- 11 - 14 -->
+        <a class="tile link" href="go:11" tabindex="0" aria-label="قناة 11"><img class="thumb" loading="lazy" src="https://i.suar.me/edGM0/l" alt="قناة 11" /></a>
+        <a class="tile link" href="go:12" tabindex="0" aria-label="قناة 12"><img class="thumb" loading="lazy" src="https://i.suar.me/OJea8/l" alt="قناة 12" /></a>
+        <a class="tile link" href="go:13" tabindex="0" aria-label="قناة 13"><img class="thumb" loading="lazy" src="https://i.suar.me/jxBMz/l" alt="قناة 13" /></a>
+        <a class="tile link" href="go:14" tabindex="0" aria-label="قناة 14"><img class="thumb" loading="lazy" src="https://i.suar.me/LV1xG/l" alt="قناة 14" /></a>
 
-        <a class="tile link" href="go:11" tabindex="0" aria-label="قناة 11"><img class="thumb" loading="lazy" src="https://i.suar.me/edGM0/l" alt="11" /></a>
-        <a class="tile link" href="go:12" tabindex="0" aria-label="قناة 12"><img class="thumb" loading="lazy" src="https://i.suar.me/OJea8/l" alt="12" /></a>
-        <a class="tile link" href="go:13" tabindex="0" aria-label="قناة 13"><img class="thumb" loading="lazy" src="https://i.suar.me/jxBMz/l" alt="13" /></a>
-        <a class="tile link" href="go:14" tabindex="0" aria-label="قناة 14"><img class="thumb" loading="lazy" src="https://i.suar.me/LV1xG/l" alt="14" /></a>
-
+        <!-- لافتة وسط -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation">
           <img class="thumb" loading="lazy" src="https://www4.0zz0.com/2024/02/01/09/194995613.png" alt="" />
         </div>
 
-        <a class="tile link" href="go:15" tabindex="0" aria-label="قناة 15"><img class="thumb" loading="lazy" src="https://i.suar.me/8e0yy/l" alt="15" /></a>
-        <a class="tile link" href="go:16" tabindex="0" aria-label="قناة 16"><img class="thumb" loading="lazy" src="https://i.suar.me/32YWj/l" alt="16" /></a>
-        <a class="tile link" href="go:17" tabindex="0" aria-label="قناة 17"><img class="thumb" loading="lazy" src="https://i.suar.me/oxe8O/l" alt="17" /></a>
+        <!-- 6 - 10 -->
+        <a class="tile link" href="go:6" tabindex="0" aria-label="قناة 6"><img class="thumb" loading="lazy" src="https://i.suar.me/za2GV/l" alt="قناة 6" /></a>
+        <a class="tile link" href="go:7" tabindex="0" aria-label="قناة 7"><img class="thumb" loading="lazy" src="https://i.suar.me/ZPe4w/l" alt="قناة 7" /></a>
+        <a class="tile link" href="go:8" tabindex="0" aria-label="قناة 8"><img class="thumb" loading="lazy" src="https://i.suar.me/XA56X/l" alt="قناة 8" /></a>
+        <a class="tile link" href="go:9" tabindex="0" aria-label="قناة 9"><img class="thumb" loading="lazy" src="https://i.suar.me/GVzGg/l" alt="قناة 9" /></a>
+        <a class="tile link" href="go:10" tabindex="0" aria-label="قناة 10"><img class="thumb" loading="lazy" src="https://i.suar.me/y2Lmq/l" alt="قناة 10" /></a>
 
+        <!-- 15 - 17 -->
+        <a class="tile link" href="go:15" tabindex="0" aria-label="قناة 15"><img class="thumb" loading="lazy" src="https://i.suar.me/8e0yy/l" alt="قناة 15" /></a>
+        <a class="tile link" href="go:16" tabindex="0" aria-label="قناة 16"><img class="thumb" loading="lazy" src="https://i.suar.me/32YWj/l" alt="قناة 16" /></a>
+        <a class="tile link" href="go:17" tabindex="0" aria-label="قناة 17"><img class="thumb" loading="lazy" src="https://i.suar.me/oxe8O/l" alt="قناة 17" /></a>
+
+        <!-- لافتة -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation"><img class="thumb" loading="lazy" src="https://i.suar.me/4aJYv/l" alt="" /></div>
 
-        <a class="tile link" href="go:18" tabindex="0" aria-label="قناة 18"><img class="thumb" loading="lazy" src="https://i.suar.me/GVl1N/l" alt="18" /></a>
-        <a class="tile link" href="go:19" tabindex="0" aria-label="قناة 19"><img class="thumb" loading="lazy" src="https://i.suar.me/KXOPZ/l" alt="19" /></a>
-        <a class="tile link" href="go:20" tabindex="0" aria-label="قناة 20"><img class="thumb" loading="lazy" src="https://i.suar.me/QJoZx/l" alt="20" /></a>
+        <!-- 18 - 20 -->
+        <a class="tile link" href="go:18" tabindex="0" aria-label="قناة 18"><img class="thumb" loading="lazy" src="https://i.suar.me/GVl1N/l" alt="قناة 18" /></a>
+        <a class="tile link" href="go:19" tabindex="0" aria-label="قناة 19"><img class="thumb" loading="lazy" src="https://i.suar.me/KXOPZ/l" alt="قناة 19" /></a>
+        <a class="tile link" href="go:20" tabindex="0" aria-label="قناة 20"><img class="thumb" loading="lazy" src="https://i.suar.me/QJoZx/l" alt="قناة 20" /></a>
 
+        <!-- لافتة -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation"><img class="thumb" loading="lazy" src="https://i.suar.me/QJoPW/l" alt="" /></div>
 
-        <a class="tile link" href="go:21" tabindex="0" aria-label="قناة 21"><img class="thumb" loading="lazy" src="https://i.suar.me/nx59x/l" alt="21" /></a>
-        <a class="tile link" href="go:22" tabindex="0" aria-label="قناة 22"><img class="thumb" loading="lazy" src="https://i.suar.me/LVdjx/l" alt="22" /></a>
-        <a class="tile link" href="go:23" tabindex="0" aria-label="قناة 23"><img class="thumb" loading="lazy" src="https://i.suar.me/8e0aO/l" alt="23" /></a>
+        <!-- 21 - 23 -->
+        <a class="tile link" href="go:21" tabindex="0" aria-label="قناة 21"><img class="thumb" loading="lazy" src="https://i.suar.me/nx59x/l" alt="قناة 21" /></a>
+        <a class="tile link" href="go:22" tabindex="0" aria-label="قناة 22"><img class="thumb" loading="lazy" src="https://i.suar.me/LVdjx/l" alt="قناة 22" /></a>
+        <a class="tile link" href="go:23" tabindex="0" aria-label="قناة 23"><img class="thumb" loading="lazy" src="https://i.suar.me/8e0aO/l" alt="قناة 23" /></a>
 
+        <!-- لافتة -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation"><img class="thumb" loading="lazy" src="https://i.suar.me/rWdY7/l" alt="" /></div>
 
-        <a class="tile link" href="go:24" tabindex="0" aria-label="قناة 24"><img class="thumb" loading="lazy" src="https://i.suar.me/wWodN/l" alt="24" /></a>
-        <a class="tile link" href="go:25" tabindex="0" aria-label="قناة 25"><img class="thumb" loading="lazy" src="https://i.suar.me/g8veK/l" alt="25" /></a>
+        <!-- 24 - 25 -->
+        <a class="tile link" href="go:24" tabindex="0" aria-label="قناة 24"><img class="thumb" loading="lazy" src="https://i.suar.me/wWodN/l" alt="قناة 24" /></a>
+        <a class="tile link" href="go:25" tabindex="0" aria-label="قناة 25"><img class="thumb" loading="lazy" src="https://i.suar.me/g8veK/l" alt="قناة 25" /></a>
 
+        <!-- لافتة -->
         <div class="tile banner" aria-hidden="true" tabindex="-1" role="presentation"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/489277181.png" alt="" /></div>
 
-        <a class="tile link" href="go:26" tabindex="0" aria-label="قناة 26"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/812637220.png" alt="26" /></a>
-        <a class="tile link" href="go:27" tabindex="0" aria-label="قناة 27"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/480587354.png" alt="27" /></a>
-        <a class="tile link" href="go:28" tabindex="0" aria-label="قناة 28"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/738428476.png" alt="28" /></a>
+        <!-- 26 - 28 -->
+        <a class="tile link" href="go:26" tabindex="0" aria-label="قناة 26"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/812637220.png" alt="قناة 26" /></a>
+        <a class="tile link" href="go:27" tabindex="0" aria-label="قناة 27"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/480587354.png" alt="قناة 27" /></a>
+        <a class="tile link" href="go:28" tabindex="0" aria-label="قناة 28"><img class="thumb" loading="lazy" src="https://www2.0zz0.com/2025/08/23/04/738428476.png" alt="قناة 28" /></a>
       </div>
     </main>
 
     <footer>Abu Faris TV Sport</footer>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
+  <!-- طبقة المشغّل -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
     <div class="player-card">
-      <video id="player" controls playsinline webkit-playsinline preload="metadata"></video>
+      <video id="player" class="video-js vjs-default-skin" controls playsinline webkit-playsinline preload="metadata"></video>
       <div class="player-actions">
         <span class="title" id="chanTitle"></span>
         <div>
@@ -117,11 +140,15 @@
     </div>
   </div>
 
-  <script>
-    const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
-    const prox = (u) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(u)}`;
+  <!-- Video.js -->
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
-    // روابطك m3u8 (كما طلبت)
+  <script>
+    /* ===== إعدادات Cloudflare Worker ===== */
+    const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
+    const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
+
+    /* ===== جدول القنوات (1–28) بصيغة M3U8 ===== */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
       2:"http://storatv.com/live/0543539887/2280625079/483657.m3u8",
@@ -152,18 +179,24 @@
       27:"http://storatv.com/live/0543539887/2280625079/763547.m3u8",
       28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
-
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
+    /* عناصر الواجهة */
     const overlay = document.getElementById('overlay');
-    const videoEl  = document.getElementById('player');
-    const closeBtn = document.getElementById('closeBtn');
     const titleEl  = document.getElementById('chanTitle');
     const openExt  = document.getElementById('openExternal');
-    let hlsInstance = null;
+    const closeBtn = document.getElementById('closeBtn');
 
-    (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
+    /* Video.js instance */
+    let vjs = null;
 
+    /* تركيز أول عنصر */
+    (function () {
+      const first = document.querySelector('.tile.link');
+      if (first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }
+    })();
+
+    /* فتح القناة */
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a.tile.link[href^="go:"]'); if (!a) return;
       e.preventDefault();
@@ -175,36 +208,29 @@
 
     function playUrl(url){
       overlay.style.display = 'flex';
-      cleanup();
+      cleanupPlayer();
 
+      /* رابط فتح في نافذة */
       const base = location.origin + location.pathname.replace(/[^/]+$/, '');
-      openExt.href = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
+      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent || 'قناة')}`;
+      openExt.href = playerPage;
 
-      startHls(url);
+      /* تهيئة Video.js كمشغّل M3U8 */
+      vjs = videojs('player', {
+        autoplay: true,
+        controls: true,
+        preload: 'auto',
+        fluid: true,
+        sources: [{ src: url, type: 'application/x-mpegURL' }]
+      });
     }
 
-    function startHls(src){
-      if (videoEl.canPlayType('application/vnd.apple.mpegurl')){
-        videoEl.src = src; videoEl.play().catch(()=>{});
-        return;
-      }
-      if (window.Hls && Hls.isSupported()){
-        hlsInstance = new Hls({ enableWorker:true });
-        hlsInstance.loadSource(src);
-        hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(()=>{}));
-        return;
-      }
-      videoEl.src = src; videoEl.play().catch(()=>{});
-    }
-
-    function cleanup(){
+    function cleanupPlayer(){
       try{
-        if (hlsInstance){ hlsInstance.destroy(); hlsInstance = null; }
-        videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
+        if (vjs){ vjs.dispose(); vjs = null; }
       }catch{}
     }
-    function closePlayer(){ overlay.style.display='none'; cleanup(); }
+    function closePlayer(){ overlay.style.display='none'; cleanupPlayer(); }
     closeBtn.addEventListener('click', closePlayer);
     overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePlayer(); });
     document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closePlayer(); });
