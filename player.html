@@ -1,44 +1,50 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>المشغّل</title>
   <style>
-    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Noto Kufi Arabic",Arial}
-    .wrap{display:flex;flex-direction:column;height:100%;}
-    header{padding:10px 12px;font-weight:700;opacity:.9}
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
-    video{width:min(100%,1000px);height:auto;background:#000;border-radius:12px}
-    .actions{padding:8px 12px}
-    a.btn{display:inline-block;background:#1976d2;color:#fff;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}
+    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{display:flex;flex-direction:column;height:100%}
+    video{width:100%;height:auto;background:#000;flex:1}
+    header{padding:10px 12px;background:#111;display:flex;justify-content:space-between;align-items:center}
+    a.btn{background:#1976d2;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:700}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <div class="wrap">
-    <header id="title">قناة مباشرة</header>
-    <main><video id="v" controls playsinline webkit-playsinline preload="metadata"></video></main>
-    <div class="actions"><a class="btn" id="openSrc" href="#" target="_blank" rel="noopener">فتح المصدر</a></div>
+    <header>
+      <div id="title">قناة مباشرة</div>
+      <a id="openSource" class="btn" target="_blank" rel="noopener">فتح المصدر</a>
+    </header>
+    <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    const q = new URLSearchParams(location.search);
-    const src = q.get('src'); const title = q.get('title') || 'قناة مباشرة';
+    const p = new URL(location.href).searchParams;
+    const src = p.get('src');
+    const title = p.get('title') || 'قناة مباشرة';
+
     document.getElementById('title').textContent = title;
-    document.getElementById('openSrc').href = src;
+    document.getElementById('openSource').href = src;
 
     const v = document.getElementById('v');
-    function play(src){
-      if (v.canPlayType('application/vnd.apple.mpegURL')){ v.src = src; v.play().catch(()=>{}); return; }
-      if (window.Hls && Hls.isSupported()){
-        const h = new Hls({ enableWorker:true }); h.loadSource(src); h.attachMedia(v);
-        h.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(()=>{}));
-        return;
+
+    function start(src){
+      if (v.canPlayType('application/vnd.apple.mpegurl')) {
+        v.src = src; v.play().catch(()=>{});
+      } else if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls({ enableWorker:true });
+        hls.loadSource(src);
+        hls.attachMedia(v);
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=> v.play().catch(()=>{}));
+      } else {
+        v.src = src; v.play().catch(()=>{});
       }
-      v.src = src; v.play().catch(()=>{});
     }
-    if (src) play(src);
+    if (src) start(src);
   </script>
 </body>
 </html>
