@@ -14,6 +14,7 @@
       --max-w: 600px;
     }
     @media (min-width: 2560px){ :root{ --safe-pad: 44px; --max-w: 1100px; } }
+
     html, body{
       margin:0; height:100%;
       background:#212121; color:#fafafa;
@@ -24,14 +25,17 @@
     header{ text-align:center; margin-bottom:14px; }
     header h1{ margin:0 0 4px; font-size:clamp(28px,4.5vw,62px); font-weight:800; }
     header .sub{ opacity:.85; font-size:clamp(16px,2.2vw,24px); }
+
     .stack{ width:min(100%,var(--max-w)); margin-inline:auto; display:flex; flex-direction:column; gap:var(--v-gap); }
     .tile{ position:relative; display:block; overflow:hidden; border-radius:var(--radius); background:transparent; outline:none; }
     .thumb{ display:block; width:100%; height:auto; object-fit:contain; background:transparent; border-radius:inherit; }
+
     .tile.link:focus{ outline:none; }
     .tile.link:focus-visible::after, .tile.link[tabindex="0"]:focus::after{
       content:""; position:absolute; inset:0; border:var(--focus-ring) solid var(--accent); border-radius:inherit; pointer-events:none;
     }
     .banner{ pointer-events:none; }
+
     footer{ text-align:center; margin-top:20px; opacity:.9; font-weight:700; font-size:clamp(16px,2vw,22px); }
     main{ width:100%; scroll-behavior:auto; overscroll-behavior:contain; }
     a, .tile { -webkit-tap-highlight-color: rgba(0,0,0,0); }
@@ -133,7 +137,7 @@
   <!-- مشغّل الفيديو -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
     <div class="player-card">
-      <video id="player" controls playsinline webkit-playsinline preload="metadata"></video>
+      <video id="player" controls playsinline webkit-playsinline preload="metadata" crossorigin="anonymous"></video>
       <div class="player-actions">
         <span class="title" id="chanTitle"></span>
         <div>
@@ -145,11 +149,11 @@
   </div>
 
   <script>
-    /* عدّل هذا لو غيّرت اسم الWorker */
+    /* اسم الWorker */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
     const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
 
-    /* روابطك .ts */
+    /* روابط TS الأصلية */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.ts",
       2:"http://storatv.com/live/0543539887/2280625079/483657.ts",
@@ -184,58 +188,102 @@
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
     const overlay = document.getElementById('overlay');
-    const videoEl = document.getElementById('player');
+    const videoEl  = document.getElementById('player');
     const closeBtn = document.getElementById('closeBtn');
-    const titleEl = document.getElementById('chanTitle');
-    const openExt = document.getElementById('openExternal');
-    let hlsInstance=null, blobUrl=null;
+    const titleEl  = document.getElementById('chanTitle');
+    const openExt  = document.getElementById('openExternal');
 
-    /* تركيز أول عنصر */
-    (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
+    let hls = null, blobUrl = null;
 
-    /* فتح القناة عند النقر */
+    /* ركّز أول عنصر */
+    (function(){
+      const first = document.querySelector('.tile.link');
+      if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }
+    })();
+
+    /* فتح القناة */
     document.addEventListener('click',(e)=>{
-      const a=e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
+      const a = e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
       e.preventDefault();
-      const id=a.getAttribute('href').split(':')[1];
-      const url=STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
-      titleEl.textContent=a.getAttribute('aria-label')||('قناة '+id);
-      openExt.href=url;
+      const id = a.getAttribute('href').split(':')[1];
+      const url = STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
+      titleEl.textContent = a.getAttribute('aria-label') || ('قناة '+id);
+      openExt.href = url;
       playUrl(url);
     });
 
     function playUrl(url){
       overlay.style.display='flex';
-      cleanupPlayer();
+      cleanup();
 
-      const isM3U8=/\.m3u8(\?|$)/i.test(url);
-      const isTS=/\.ts(\?|$)/i.test(url);
+      const isM3U8 = /\.m3u8(\?|$)/i.test(url);
+      const isTS   = /\.ts(\?|$)/i.test(url);
+
+      // iOS/TV جاهز للتشغيل
+      videoEl.muted = false;
+      videoEl.playsInline = true;
 
       if(isTS){
-        const m3u8Text=makeSingleM3U8(url);
-        const blob=new Blob([m3u8Text],{type:'application/vnd.apple.mpegURL'});
-        blobUrl=URL.createObjectURL(blob);
-        startHls(blobUrl); return;
+        const m3u8Text = makeSingleM3U8(url);
+        const blob = new Blob([m3u8Text],{type:'application/vnd.apple.mpegURL'});
+        blobUrl = URL.createObjectURL(blob);
+        startHls(blobUrl);
+        return;
       }
       if(isM3U8){ startHls(url); return; }
 
-      videoEl.src=url; videoEl.play().catch(()=>{});
+      videoEl.src = url; videoEl.play().catch(()=>{});
     }
 
     function startHls(src){
-      if(videoEl.canPlayType('application/vnd.apple.mpegURL')){
-        videoEl.src=src; videoEl.play().catch(()=>{});
-      }else if(window.Hls && Hls.isSupported()){
-        hlsInstance=new Hls({enableWorker:true});
-        hlsInstance.loadSource(src);
-        hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoEl.play().catch(()=>{}));
-      }else{ videoEl.src=src; videoEl.play().catch(()=>{}); }
+      // Safari
+      if (videoEl.canPlayType('application/vnd.apple.mpegURL')) {
+        videoEl.src = src;
+        videoEl.play().catch(()=>{});
+        return;
+      }
+
+      if (window.Hls && Hls.isSupported()){
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 90,
+          xhrSetup: (xhr)=>{
+            xhr.withCredentials = false; // بدون كوكيز
+          },
+        });
+        hls.loadSource(src);
+        hls.attachMedia(videoEl);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=> videoEl.play().catch(()=>{}));
+
+        hls.on(Hls.Events.ERROR, (event, data)=>{
+          console.warn('HLS error', data);
+          if(data.fatal){
+            switch(data.type){
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                hls.startLoad(); break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls.recoverMediaError(); break;
+              default:
+                // سقوط للتشغيل المباشر
+                hls.destroy(); hls=null;
+                videoEl.src = src;
+                videoEl.play().catch(()=>{});
+                break;
+            }
+          }
+        });
+      }else{
+        // متصفحات قديمة
+        videoEl.src = src;
+        videoEl.play().catch(()=>{});
+      }
     }
 
     /* نصنع قائمة تشغيل مؤقتة من ملف TS واحد */
     function makeSingleM3U8(tsUrl){
-      const TARGET=36000; /* 10 ساعات تقريبًا - لا يهم الطول الفعلي */
+      const TARGET = 36000; // 10 ساعات تقريبًا
       return [
         '#EXTM3U',
         '#EXT-X-VERSION:3',
@@ -247,14 +295,16 @@
       ].join('\n');
     }
 
-    function cleanupPlayer(){
+    function cleanup(){
       try{
-        if(hlsInstance){ hlsInstance.destroy(); hlsInstance=null; }
+        if(hls){ hls.destroy(); hls=null; }
         if(blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl=null; }
-        videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
+        videoEl.pause();
+        videoEl.removeAttribute('src');
+        videoEl.load();
       }catch(e){}
     }
-    function closePlayer(){ overlay.style.display='none'; cleanupPlayer(); }
+    function closePlayer(){ overlay.style.display='none'; cleanup(); }
     closeBtn.addEventListener('click', closePlayer);
     overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closePlayer(); });
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePlayer(); });
