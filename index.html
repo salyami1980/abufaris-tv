@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <title>القنوات الرياضية – TV</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23212121'/%3E%3Cpath d='M18 22h28v20H18z' fill='%23ffc107'/%3E%3Cpath d='M21 25h22v14H21z' fill='%23000'/%3E%3C/svg%3E">
   <style>
     :root{ --safe-pad:32px; --radius:22px; --focus-ring:5px; --accent:#ffc107; --v-gap:16px; --max-w:600px; }
     @media (min-width:2560px){ :root{ --safe-pad:44px; --max-w:1100px; } }
@@ -121,7 +120,7 @@
   </div>
 
   <!-- HLS -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <!-- طبقة المشغّل -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
@@ -138,11 +137,11 @@
   </div>
 
   <script>
-    /* ===== إعدادات Cloudflare Worker ===== */
+    /* ===== إعدادات Cloudflare Worker (استخدم نفس الدومين لوركرك) ===== */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
-    const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
+    const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}&ref=auto`;
 
-    /* ===== جدول القنوات (1–28) بصيغة M3U8 ===== */
+    /* ===== جدول القنوات (1–28) بصيغة M3U8 عبر الوِركر ===== */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
       2:"http://storatv.com/live/0543539887/2280625079/483657.m3u8",
@@ -173,17 +172,15 @@
       27:"http://storatv.com/live/0543539887/2280625079/763547.m3u8",
       28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
-
-    /* تمرير عبر الوركر (HTTPS) */
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
-    /* عناصر الواجهة */
+    /* ===== عناصر الواجهة ===== */
     const overlay = document.getElementById('overlay');
     const videoEl  = document.getElementById('player');
     const closeBtn = document.getElementById('closeBtn');
     const titleEl  = document.getElementById('chanTitle');
     const openExt  = document.getElementById('openExternal');
-    let hlsInstance = null, blobUrl = null;
+    let hlsInstance = null;
 
     /* تركيز أول عنصر */
     (function () {
@@ -212,7 +209,7 @@
       openExt.target = '_blank';
       openExt.rel = 'noopener';
 
-      startHls(url); // كلها m3u8
+      startHls(url); // كلها m3u8 عبر الوِركر
     }
 
     function startHls(src){
@@ -233,7 +230,6 @@
     function cleanupPlayer(){
       try{
         if (hlsInstance){ hlsInstance.destroy(); hlsInstance = null; }
-        if (blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl = null; }
         videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
       } catch {}
     }
