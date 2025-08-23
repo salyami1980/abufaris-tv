@@ -2,81 +2,42 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-  <title id="title">مشغّل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المشغّل</title>
   <style>
-    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Noto Kufi Arabic",Arial,sans-serif}
-    .wrap{min-height:100%;display:flex;flex-direction:column}
-    header,footer{padding:10px 14px;opacity:.9}
-    header{font-weight:800}
+    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Noto Kufi Arabic",Arial}
+    .wrap{display:flex;flex-direction:column;height:100%;}
+    header{padding:10px 12px;font-weight:700;opacity:.9}
     main{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
-    video{width:min(100%,900px);height:auto;background:#000;border-radius:10px}
-    a.btn{display:inline-block;background:#1976d2;color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700;margin-left:8px}
+    video{width:min(100%,1000px);height:auto;background:#000;border-radius:12px}
+    .actions{padding:8px 12px}
+    a.btn{display:inline-block;background:#1976d2;color:#fff;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:700}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <span id="label">قناة مباشرة</span>
-      <a id="openSource" class="btn" target="_blank" rel="noopener">فتح المصدر</a>
-    </header>
-    <main>
-      <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
-    </main>
-    <footer>Abu Faris TV Sport</footer>
+    <header id="title">قناة مباشرة</header>
+    <main><video id="v" controls playsinline webkit-playsinline preload="metadata"></video></main>
+    <div class="actions"><a class="btn" id="openSrc" href="#" target="_blank" rel="noopener">فتح المصدر</a></div>
   </div>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const src   = params.get('src') || '';
-    const title = params.get('title') || 'قناة مباشرة';
+    const q = new URLSearchParams(location.search);
+    const src = q.get('src'); const title = q.get('title') || 'قناة مباشرة';
     document.getElementById('title').textContent = title;
-    document.getElementById('label').textContent = title;
-    document.getElementById('openSource').href  = src;
+    document.getElementById('openSrc').href = src;
 
     const v = document.getElementById('v');
-    let hls = null, blobUrl = null;
-
-    function asSingleM3U8(tsUrl){
-      const TARGET = 36000;
-      return [
-        '#EXTM3U','#EXT-X-VERSION:3',`#EXT-X-TARGETDURATION:${TARGET}`,
-        '#EXT-X-MEDIA-SEQUENCE:0',`#EXTINF:${TARGET}.0,`,tsUrl,'#EXT-X-ENDLIST'
-      ].join('\n');
-    }
-
-    function play(u){
-      const isM3U8 = /\.m3u8(\?|$)/i.test(u);
-      const isTS   = /\.ts(\?|$)/i.test(u);
-
-      if (isTS){
-        const blob = new Blob([asSingleM3U8(u)], {type:'application/vnd.apple.mpegURL'});
-        blobUrl = URL.createObjectURL(blob);
-        u = blobUrl;
+    function play(src){
+      if (v.canPlayType('application/vnd.apple.mpegURL')){ v.src = src; v.play().catch(()=>{}); return; }
+      if (window.Hls && Hls.isSupported()){
+        const h = new Hls({ enableWorker:true }); h.loadSource(src); h.attachMedia(v);
+        h.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(()=>{}));
+        return;
       }
-
-      if (v.canPlayType('application/vnd.apple.mpegURL')){
-        v.src = u; v.play().catch(()=>{});
-      } else if (window.Hls && Hls.isSupported()){
-        hls = new Hls({enableWorker:true});
-        hls.loadSource(u);
-        hls.attachMedia(v);
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>v.play().catch(()=>{}));
-      } else {
-        v.src = u; v.play().catch(()=>{});
-      }
+      v.src = src; v.play().catch(()=>{});
     }
-
-    function cleanup(){
-      try{
-        if (hls){ hls.destroy(); hls=null; }
-        if (blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl=null; }
-        v.pause(); v.removeAttribute('src'); v.load();
-      }catch{}
-    }
-
-    window.addEventListener('beforeunload', cleanup);
     if (src) play(src);
   </script>
 </body>
