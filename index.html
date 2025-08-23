@@ -137,41 +137,43 @@
   </div>
 
   <script>
-    /* ===== إعدادات Cloudflare Worker (عدّل الاسم إن تغيّر) ===== */
+    /* ===== إعدادات Cloudflare Worker ===== */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
     const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
 
-    /* ===== جدول القنوات (1–28) ===== */
+    /* ===== جدول القنوات (1–28) بصيغة M3U8 ===== */
     const RAW = {
-      1:"http://storatv.com/live/0543539887/2280625079/483688.ts",
-      2:"http://storatv.com/live/0543539887/2280625079/483657.ts",
-      3:"http://storatv.com/live/0543539887/2280625079/483660.ts",
-      4:"http://storatv.com/live/0543539887/2280625079/483663.ts",
-      5:"http://storatv.com/live/0543539887/2280625079/483667.ts",
-      6:"http://storatv.com/live/0543539887/2280625079/689531.ts",
-      7:"http://storatv.com/live/0543539887/2280625079/689534.ts",
-      8:"http://storatv.com/live/0543539887/2280625079/689535.ts",
-      9:"http://storatv.com/live/0543539887/2280625079/689536.ts",
-      10:"http://storatv.com/live/0543539887/2280625079/689539.ts",
-      11:"http://storatv.com/live/0543539887/2280625079/483669.ts",
-      12:"http://storatv.com/live/0543539887/2280625079/483672.ts",
-      13:"http://storatv.com/live/0543539887/2280625079/483675.ts",
-      14:"http://storatv.com/live/0543539887/2280625079/483678.ts",
-      15:"http://storatv.com/live/0543539887/2280625079/689557.ts",
-      16:"http://storatv.com/live/0543539887/2280625079/689559.ts",
-      17:"http://storatv.com/live/0543539887/2280625079/689546.ts",
-      18:"http://storatv.com/live/0543539887/2280625079/69195.ts",
-      19:"http://storatv.com/live/0543539887/2280625079/69196.ts",
-      20:"http://storatv.com/live/0543539887/2280625079/178390.ts",
-      21:"http://storatv.com/live/0543539887/2280625079/222044.ts",
-      22:"http://storatv.com/live/0543539887/2280625079/222045.ts",
-      23:"http://storatv.com/live/0543539887/2280625079/222047.ts",
-      24:"http://storatv.com/live/0543539887/2280625079/362201.ts",
-      25:"http://storatv.com/live/0543539887/2280625079/362204.ts",
-      26:"http://storatv.com/live/0543539887/2280625079/763544.ts",
-      27:"http://storatv.com/live/0543539887/2280625079/763547.ts",
-      28:"http://storatv.com/live/0543539887/2280625079/763550.ts"
+      1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
+      2:"http://storatv.com/live/0543539887/2280625079/483657.m3u8",
+      3:"http://storatv.com/live/0543539887/2280625079/483660.m3u8",
+      4:"http://storatv.com/live/0543539887/2280625079/483663.m3u8",
+      5:"http://storatv.com/live/0543539887/2280625079/483667.m3u8",
+      6:"http://storatv.com/live/0543539887/2280625079/689531.m3u8",
+      7:"http://storatv.com/live/0543539887/2280625079/689534.m3u8",
+      8:"http://storatv.com/live/0543539887/2280625079/689535.m3u8",
+      9:"http://storatv.com/live/0543539887/2280625079/689536.m3u8",
+      10:"http://storatv.com/live/0543539887/2280625079/689539.m3u8",
+      11:"http://storatv.com/live/0543539887/2280625079/483669.m3u8",
+      12:"http://storatv.com/live/0543539887/2280625079/483672.m3u8",
+      13:"http://storatv.com/live/0543539887/2280625079/483675.m3u8",
+      14:"http://storatv.com/live/0543539887/2280625079/483678.m3u8",
+      15:"http://storatv.com/live/0543539887/2280625079/689557.m3u8",
+      16:"http://storatv.com/live/0543539887/2280625079/689559.m3u8",
+      17:"http://storatv.com/live/0543539887/2280625079/689546.m3u8",
+      18:"http://storatv.com/live/0543539887/2280625079/69195.m3u8",
+      19:"http://storatv.com/live/0543539887/2280625079/69196.m3u8",
+      20:"http://storatv.com/live/0543539887/2280625079/178390.m3u8",
+      21:"http://storatv.com/live/0543539887/2280625079/222044.m3u8",
+      22:"http://storatv.com/live/0543539887/2280625079/222045.m3u8",
+      23:"http://storatv.com/live/0543539887/2280625079/222047.m3u8",
+      24:"http://storatv.com/live/0543539887/2280625079/362201.m3u8",
+      25:"http://storatv.com/live/0543539887/2280625079/362204.m3u8",
+      26:"http://storatv.com/live/0543539887/2280625079/763544.m3u8",
+      27:"http://storatv.com/live/0543539887/2280625079/763547.m3u8",
+      28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
+
+    /* نمرّرها عبر الوِركر (HTTPS) لتفادي التحميل وCORS */
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
     /* ===== عناصر الواجهة ===== */
@@ -202,9 +204,6 @@
       overlay.style.display = 'flex';
       cleanupPlayer();
 
-      const isM3U8 = /\.m3u8(\?|$)/i.test(url);
-      const isTS   = /\.ts(\?|$)/i.test(url);
-
       /* زر فتح في نافذة (رابط مطلق لصفحة player.html) */
       const base = location.origin + location.pathname.replace(/[^/]+$/, '');
       const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent || 'قناة')}`;
@@ -212,48 +211,22 @@
       openExt.target = '_blank';
       openExt.rel = 'noopener';
 
-      if (isTS){
-        const m3u8Text = makeSingleM3U8(url);
-        const blob = new Blob([m3u8Text], {type:'application/vnd.apple.mpegURL'});
-        blobUrl = URL.createObjectURL(blob);
-        startHls(blobUrl);
-        return;
-      }
-      if (isM3U8){
-        startHls(url);
-        return;
-      }
-      videoEl.src = url;
-      videoEl.play().catch(err => console.error('video play error', err));
+      startHls(url); // الآن كلها m3u8، مباشرةً
     }
 
     function startHls(src){
       if (videoEl.canPlayType('application/vnd.apple.mpegURL')){
         videoEl.src = src;
-        videoEl.play().catch(err => console.error('native hls play error', err));
+        videoEl.play().catch(()=>{});
       } else if (window.Hls && Hls.isSupported()){
         hlsInstance = new Hls({ enableWorker:true });
         hlsInstance.loadSource(src);
         hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(err => console.error('hls.js play error', err)));
-        hlsInstance.on(Hls.Events.ERROR, (_e, data) => console.error('HLS error', data));
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(()=>{}));
       } else {
         videoEl.src = src;
-        videoEl.play().catch(err => console.error('fallback play error', err));
+        videoEl.play().catch(()=>{});
       }
-    }
-
-    function makeSingleM3U8(tsUrl){
-      const TARGET = 36000; // نحو 10 ساعات
-      return [
-        '#EXTM3U',
-        '#EXT-X-VERSION:3',
-        `#EXT-X-TARGETDURATION:${TARGET}`,
-        '#EXT-X-MEDIA-SEQUENCE:0',
-        `#EXTINF:${TARGET}.0,`,
-        tsUrl,
-        '#EXT-X-ENDLIST'
-      ].join('\n');
     }
 
     function cleanupPlayer(){
