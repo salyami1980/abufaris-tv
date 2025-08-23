@@ -1,38 +1,43 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>مشغل M3U8</title>
-
-  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المشغّل</title>
   <style>
-    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui, sans-serif}
-    #title{padding:10px;text-align:center;font-weight:bold;background:#111}
-    .video-js{width:100%;height:calc(100vh - 48px);}
+    html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Kufi Arabic","Noto Sans Arabic",Arial,sans-serif}
+    .wrap{min-height:100%;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;padding:16px}
+    video{width:min(100%,900px);height:auto;background:#000;border-radius:12px}
+    .bar{width:min(100%,900px);display:flex;justify-content:space-between;align-items:center}
+    .title{font-weight:700}
+    .btn{padding:10px 14px;border-radius:8px;border:0;background:#1976d2;color:#fff;cursor:pointer}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-  <div id="title">قناة مباشرة</div>
-  <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" playsinline webkit-playsinline></video>
-
-  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+  <div class="wrap">
+    <video id="v" controls playsinline webkit-playsinline preload="metadata"></video>
+    <div class="bar">
+      <div class="title" id="t"></div>
+      <button class="btn" onclick="location.reload()">إعادة تحميل</button>
+    </div>
+  </div>
   <script>
-    const p = new URL(location.href).searchParams;
-    const src = p.get('src');
-    const title = p.get('title') || "قناة مباشرة";
-    document.getElementById('title').textContent = title;
+    const q = new URLSearchParams(location.search);
+    const src = q.get('src');
+    const title = q.get('title')||'قناة مباشرة';
+    document.getElementById('t').textContent = title;
+    const v = document.getElementById('v');
 
-    if(src){
-      videojs('my-video', {
-        autoplay: true,
-        controls: true,
-        preload: 'auto',
-        fluid: true,
-        sources: [{ src, type: 'application/x-mpegURL' }]
-      });
-    }else{
-      document.getElementById('title').textContent = 'لا يوجد رابط بث';
+    if (v.canPlayType('application/vnd.apple.mpegURL')) {
+      v.src = src; v.play().catch(()=>{});
+    } else if (window.Hls && Hls.isSupported()){
+      const hls = new Hls({ enableWorker:true });
+      hls.loadSource(src);
+      hls.attachMedia(v);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(()=>{}));
+    } else {
+      v.src = src; v.play().catch(()=>{});
     }
   </script>
 </body>
