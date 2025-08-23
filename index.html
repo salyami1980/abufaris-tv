@@ -122,7 +122,7 @@
   <!-- HLS -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <!-- مشغّل الفيديو -->
+  <!-- طبقة المشغّل -->
   <div class="player-overlay" id="overlay" role="dialog" aria-modal="true" aria-label="مشغل الفيديو">
     <div class="player-card">
       <video id="player" controls playsinline webkit-playsinline preload="metadata"></video>
@@ -137,11 +137,11 @@
   </div>
 
   <script>
-    // ===== إعدادات الوِركر =====
+    /* ===== إعدادات Cloudflare Worker (عدّل الاسم إن تغيّر) ===== */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
     const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
 
-    // ===== روابط القنوات (TS) =====
+    /* ===== جدول القنوات (1–28) ===== */
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.ts",
       2:"http://storatv.com/live/0543539887/2280625079/483657.ts",
@@ -174,23 +174,26 @@
     };
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
-    // ===== عناصر الواجهة =====
+    /* ===== عناصر الواجهة ===== */
     const overlay = document.getElementById('overlay');
-    const videoEl = document.getElementById('player');
+    const videoEl  = document.getElementById('player');
     const closeBtn = document.getElementById('closeBtn');
-    const titleEl = document.getElementById('chanTitle');
-    const openExt = document.getElementById('openExternal');
+    const titleEl  = document.getElementById('chanTitle');
+    const openExt  = document.getElementById('openExternal');
     let hlsInstance = null, blobUrl = null;
 
-    // تركيز أول عنصر
-    (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
+    /* تركيز أول عنصر */
+    (function () {
+      const first = document.querySelector('.tile.link');
+      if (first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }
+    })();
 
-    // فتح القناة عند النقر
+    /* فتح القناة */
     document.addEventListener('click', (e) => {
-      const a = e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
+      const a = e.target.closest('a.tile.link[href^="go:"]'); if (!a) return;
       e.preventDefault();
-      const id = a.getAttribute('href').split(':')[1];
-      const url = STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
+      const id  = a.getAttribute('href').split(':')[1];
+      const url = STREAMS[id]; if (!url){ alert('لا يوجد رابط'); return; }
       titleEl.textContent = a.getAttribute('aria-label') || ('قناة ' + id);
       playUrl(url);
     });
@@ -202,9 +205,9 @@
       const isM3U8 = /\.m3u8(\?|$)/i.test(url);
       const isTS   = /\.ts(\?|$)/i.test(url);
 
-      // رابط مطلق لـ player.html على GitHub Pages
+      /* زر فتح في نافذة (رابط مطلق لصفحة player.html) */
       const base = location.origin + location.pathname.replace(/[^/]+$/, '');
-      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
+      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent || 'قناة')}`;
       openExt.href = playerPage;
       openExt.target = '_blank';
       openExt.rel = 'noopener';
@@ -216,25 +219,27 @@
         startHls(blobUrl);
         return;
       }
-      if (isM3U8){ startHls(url); return; }
-
+      if (isM3U8){
+        startHls(url);
+        return;
+      }
       videoEl.src = url;
-      videoEl.play().catch(err=>console.error('video play error', err));
+      videoEl.play().catch(err => console.error('video play error', err));
     }
 
     function startHls(src){
       if (videoEl.canPlayType('application/vnd.apple.mpegURL')){
         videoEl.src = src;
-        videoEl.play().catch(err=>console.error('native hls play error', err));
+        videoEl.play().catch(err => console.error('native hls play error', err));
       } else if (window.Hls && Hls.isSupported()){
         hlsInstance = new Hls({ enableWorker:true });
         hlsInstance.loadSource(src);
         hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(err=>console.error('hls.js play error', err)));
-        hlsInstance.on(Hls.Events.ERROR, (ev, data)=>console.error('HLS error', data));
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(err => console.error('hls.js play error', err)));
+        hlsInstance.on(Hls.Events.ERROR, (_e, data) => console.error('HLS error', data));
       } else {
         videoEl.src = src;
-        videoEl.play().catch(err=>console.error('fallback play error', err));
+        videoEl.play().catch(err => console.error('fallback play error', err));
       }
     }
 
@@ -253,15 +258,15 @@
 
     function cleanupPlayer(){
       try{
-        if(hlsInstance){ hlsInstance.destroy(); hlsInstance=null; }
-        if(blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl=null; }
+        if (hlsInstance){ hlsInstance.destroy(); hlsInstance = null; }
+        if (blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl = null; }
         videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
-      }catch(e){}
+      } catch {}
     }
     function closePlayer(){ overlay.style.display='none'; cleanupPlayer(); }
     closeBtn.addEventListener('click', closePlayer);
-    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closePlayer(); });
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closePlayer(); });
+    overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePlayer(); });
+    document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closePlayer(); });
   </script>
 </body>
 </html>
