@@ -48,18 +48,17 @@
           <img class="thumb" loading="lazy" src="https://www4.0zz0.com/2024/02/01/09/100522793.png" alt="" />
         </div>
 
-        <!-- ضع صورك كما تحب؛ الروابط أدناه مجرد أمثلة -->
-        <!-- 1..28 -->
+        <!-- صور القنوات كما لديك… (أبقيتها كما أرسلت) -->
         <a class="tile link" href="go:1"  tabindex="0" aria-label="قناة 1"><img class="thumb" loading="lazy" src="https://i.suar.me/VWaMw/l" alt="1" /></a>
         <a class="tile link" href="go:2"  tabindex="0" aria-label="قناة 2"><img class="thumb" loading="lazy" src="https://i.suar.me/QJQKW/l" alt="2" /></a>
         <a class="tile link" href="go:3"  tabindex="0" aria-label="قناة 3"><img class="thumb" loading="lazy" src="https://i.suar.me/9NjMe/l" alt="3" /></a>
         <a class="tile link" href="go:4"  tabindex="0" aria-label="قناة 4"><img class="thumb" loading="lazy" src="https://i.suar.me/YJqzY/l" alt="4" /></a>
         <a class="tile link" href="go:5"  tabindex="0" aria-label="قناة 5"><img class="thumb" loading="lazy" src="https://i.suar.me/7qOgo/l" alt="5" /></a>
 
-        <a class="tile link" href="go:6"  tabindex="0" aria-label="قناة 6"><img class="thumb" loading="lazy" src="https://i.suar.me/za2GV/l" alt="6" /></a>
-        <a class="tile link" href="go:7"  tabindex="0" aria-label="قناة 7"><img class="thumb" loading="lazy" src="https://i.suar.me/ZPe4w/l" alt="7" /></a>
-        <a class="tile link" href="go:8"  tabindex="0" aria-label="قناة 8"><img class="thumb" loading="lazy" src="https://i.suar.me/XA56X/l" alt="8" /></a>
-        <a class="tile link" href="go:9"  tabindex="0" aria-label="قناة 9"><img class="thumb" loading="lazy" src="https://i.suar.me/GVzGg/l" alt="9" /></a>
+        <a class="tile link" href="go:6" tabindex="0" aria-label="قناة 6"><img class="thumb" loading="lazy" src="https://i.suar.me/za2GV/l" alt="6" /></a>
+        <a class="tile link" href="go:7" tabindex="0" aria-label="قناة 7"><img class="thumb" loading="lazy" src="https://i.suar.me/ZPe4w/l" alt="7" /></a>
+        <a class="tile link" href="go:8" tabindex="0" aria-label="قناة 8"><img class="thumb" loading="lazy" src="https://i.suar.me/XA56X/l" alt="8" /></a>
+        <a class="tile link" href="go:9" tabindex="0" aria-label="قناة 9"><img class="thumb" loading="lazy" src="https://i.suar.me/GVzGg/l" alt="9" /></a>
         <a class="tile link" href="go:10" tabindex="0" aria-label="قناة 10"><img class="thumb" loading="lazy" src="https://i.suar.me/y2Lmq/l" alt="10" /></a>
 
         <a class="tile link" href="go:11" tabindex="0" aria-label="قناة 11"><img class="thumb" loading="lazy" src="https://i.suar.me/edGM0/l" alt="11" /></a>
@@ -119,47 +118,11 @@
   </div>
 
   <script>
-    /* ===== الإعدادات ===== */
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
-    const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
+    const prox = (u) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(u)}`;
 
-    // فعّل التجربة: روابط عامة تعمل للجميع (اختبر بها المشغّل)
-    const DEMO_MODE = true;
-
-    // قنوات تجريبية (HLS عامة)
-    const RAW_DEMO = {
-      1: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      2: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      3: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      4: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      5: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      6: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      7: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      8: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      9: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      10:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      11:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      12:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      13:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      14:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      15:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      16:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      17:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      18:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      19:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      20:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      21:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      22:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      23:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      24:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      25:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      26:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      27:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      28:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-    };
-
-    // ضع روابطك الحقيقية هنا (m3u8 مفضّل). مثال:
-    const RAW_REAL = {
+    // روابطك m3u8 (كما طلبت)
+    const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
       2:"http://storatv.com/live/0543539887/2280625079/483657.m3u8",
       3:"http://storatv.com/live/0543539887/2280625079/483660.m3u8",
@@ -190,7 +153,6 @@
       28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
 
-    const RAW = DEMO_MODE ? RAW_DEMO : RAW_REAL;
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
     const overlay = document.getElementById('overlay');
@@ -200,10 +162,7 @@
     const openExt  = document.getElementById('openExternal');
     let hlsInstance = null;
 
-    (function (){
-      const first = document.querySelector('.tile.link');
-      if (first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }
-    })();
+    (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
 
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a.tile.link[href^="go:"]'); if (!a) return;
@@ -219,8 +178,7 @@
       cleanup();
 
       const base = location.origin + location.pathname.replace(/[^/]+$/, '');
-      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
-      openExt.href = playerPage;
+      openExt.href = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
 
       startHls(url);
     }
@@ -235,11 +193,6 @@
         hlsInstance.loadSource(src);
         hlsInstance.attachMedia(videoEl);
         hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(()=>{}));
-        hlsInstance.on(Hls.Events.ERROR, (_e, data)=>{
-          if (data?.fatal && data?.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            hlsInstance?.startLoad();
-          }
-        });
         return;
       }
       videoEl.src = src; videoEl.play().catch(()=>{});
@@ -251,7 +204,6 @@
         videoEl.pause(); videoEl.removeAttribute('src'); videoEl.load();
       }catch{}
     }
-
     function closePlayer(){ overlay.style.display='none'; cleanup(); }
     closeBtn.addEventListener('click', closePlayer);
     overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closePlayer(); });
