@@ -5,20 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <title>القنوات الرياضية – TV</title>
   <style>
-    :root{
-      --safe-pad: 32px;
-      --radius: 22px;
-      --focus-ring: 5px;
-      --accent: #ffc107;
-      --v-gap: 16px;
-      --max-w: 600px;
-    }
-    @media (min-width: 2560px){ :root{ --safe-pad: 44px; --max-w: 1100px; } }
-    html, body{
-      margin:0; height:100%;
-      background:#212121; color:#fafafa;
+    :root{ --safe-pad:32px; --radius:22px; --focus-ring:5px; --accent:#ffc107; --v-gap:16px; --max-w:600px; }
+    @media (min-width:2560px){ :root{ --safe-pad:44px; --max-w:1100px; } }
+    html,body{
+      margin:0;height:100%;background:#212121;color:#fafafa;
       font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Kufi Arabic","Noto Sans Arabic",Arial,sans-serif;
-      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overscroll-behavior:none;
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overscroll-behavior:none;
     }
     .page{ min-height:100%; box-sizing:border-box; padding:var(--safe-pad); display:flex; flex-direction:column; align-items:center; }
     header{ text-align:center; margin-bottom:14px; }
@@ -28,20 +20,20 @@
     .tile{ position:relative; display:block; overflow:hidden; border-radius:var(--radius); background:transparent; outline:none; }
     .thumb{ display:block; width:100%; height:auto; object-fit:contain; background:transparent; border-radius:inherit; }
     .tile.link:focus{ outline:none; }
-    .tile.link:focus-visible::after, .tile.link[tabindex="0"]:focus::after{
+    .tile.link:focus-visible::after,.tile.link[tabindex="0"]:focus::after{
       content:""; position:absolute; inset:0; border:var(--focus-ring) solid var(--accent); border-radius:inherit; pointer-events:none;
     }
     .banner{ pointer-events:none; }
     footer{ text-align:center; margin-top:20px; opacity:.9; font-weight:700; font-size:clamp(16px,2vw,22px); }
     main{ width:100%; scroll-behavior:auto; overscroll-behavior:contain; }
-    a, .tile { -webkit-tap-highlight-color: rgba(0,0,0,0); }
+    a,.tile{ -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
     /* طبقة المشغّل */
     .player-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:9999; }
     .player-card{ width:min(100%,900px); background:#000; border-radius:16px; padding:12px; }
     .player-card video{ width:100%; height:auto; border-radius:12px; background:#000; }
     .player-actions{ display:flex; gap:8px; justify-content:space-between; margin-top:8px; align-items:center; color:#fff; }
-    .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700 }
+    .btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
     .btn-close{ background:#ff5252; color:#fff; }
     .btn-open-ext{ background:#1976d2; color:#fff; }
     .title{ font-weight:700; }
@@ -145,11 +137,11 @@
   </div>
 
   <script>
-    /* عدّل هذا لو غيّرت اسم الWorker */
+    // ===== إعدادات الوِركر =====
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
     const prox = (rawUrl) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(rawUrl)}`;
 
-    /* روابطك .ts */
+    // ===== روابط القنوات (TS) =====
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.ts",
       2:"http://storatv.com/live/0543539887/2280625079/483657.ts",
@@ -180,69 +172,74 @@
       27:"http://storatv.com/live/0543539887/2280625079/763547.ts",
       28:"http://storatv.com/live/0543539887/2280625079/763550.ts"
     };
-
     const STREAMS = Object.fromEntries(Object.entries(RAW).map(([k,v]) => [k, prox(v)]));
 
+    // ===== عناصر الواجهة =====
     const overlay = document.getElementById('overlay');
     const videoEl = document.getElementById('player');
     const closeBtn = document.getElementById('closeBtn');
     const titleEl = document.getElementById('chanTitle');
     const openExt = document.getElementById('openExternal');
-    let hlsInstance=null, blobUrl=null;
+    let hlsInstance = null, blobUrl = null;
 
-    /* تركيز أول عنصر */
+    // تركيز أول عنصر
     (function(){ const first=document.querySelector('.tile.link'); if(first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); }})();
 
-    /* فتح القناة عند النقر */
-    document.addEventListener('click',(e)=>{
-      const a=e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
+    // فتح القناة عند النقر
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a.tile.link[href^="go:"]'); if(!a) return;
       e.preventDefault();
-      const id=a.getAttribute('href').split(':')[1];
-      const url=STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
-      titleEl.textContent=a.getAttribute('aria-label')||('قناة '+id);
-
+      const id = a.getAttribute('href').split(':')[1];
+      const url = STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
+      titleEl.textContent = a.getAttribute('aria-label') || ('قناة ' + id);
       playUrl(url);
     });
 
     function playUrl(url){
-      overlay.style.display='flex';
+      overlay.style.display = 'flex';
       cleanupPlayer();
 
-      const isM3U8=/\.m3u8(\?|$)/i.test(url);
-      const isTS=/\.ts(\?|$)/i.test(url);
+      const isM3U8 = /\.m3u8(\?|$)/i.test(url);
+      const isTS   = /\.ts(\?|$)/i.test(url);
 
-      /* مهم: زر "فتح في نافذة" يفتح صفحة player.html مع تمرير الرابط */
-      const playerPage = `player.html?src=${encodeURIComponent(url)}`;
-      openExt.setAttribute('href', playerPage);
-      openExt.setAttribute('target', '_blank');
-      openExt.setAttribute('rel', 'noopener');
+      // رابط مطلق لـ player.html على GitHub Pages
+      const base = location.origin + location.pathname.replace(/[^/]+$/, '');
+      const playerPage = `${base}player.html?src=${encodeURIComponent(url)}&title=${encodeURIComponent(titleEl.textContent||'قناة')}`;
+      openExt.href = playerPage;
+      openExt.target = '_blank';
+      openExt.rel = 'noopener';
 
-      if(isTS){
-        const m3u8Text=makeSingleM3U8(url);
-        const blob=new Blob([m3u8Text],{type:'application/vnd.apple.mpegURL'});
-        blobUrl=URL.createObjectURL(blob);
-        startHls(blobUrl); 
+      if (isTS){
+        const m3u8Text = makeSingleM3U8(url);
+        const blob = new Blob([m3u8Text], {type:'application/vnd.apple.mpegURL'});
+        blobUrl = URL.createObjectURL(blob);
+        startHls(blobUrl);
         return;
       }
-      if(isM3U8){ startHls(url); return; }
+      if (isM3U8){ startHls(url); return; }
 
-      videoEl.src=url; videoEl.play().catch(()=>{});
+      videoEl.src = url;
+      videoEl.play().catch(err=>console.error('video play error', err));
     }
 
     function startHls(src){
-      if(videoEl.canPlayType('application/vnd.apple.mpegURL')){
-        videoEl.src=src; videoEl.play().catch(()=>{});
-      }else if(window.Hls && Hls.isSupported()){
-        hlsInstance=new Hls({enableWorker:true});
+      if (videoEl.canPlayType('application/vnd.apple.mpegURL')){
+        videoEl.src = src;
+        videoEl.play().catch(err=>console.error('native hls play error', err));
+      } else if (window.Hls && Hls.isSupported()){
+        hlsInstance = new Hls({ enableWorker:true });
         hlsInstance.loadSource(src);
         hlsInstance.attachMedia(videoEl);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoEl.play().catch(()=>{}));
-      }else{ videoEl.src=src; videoEl.play().catch(()=>{}); }
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(err=>console.error('hls.js play error', err)));
+        hlsInstance.on(Hls.Events.ERROR, (ev, data)=>console.error('HLS error', data));
+      } else {
+        videoEl.src = src;
+        videoEl.play().catch(err=>console.error('fallback play error', err));
+      }
     }
 
-    /* نصنع قائمة تشغيل مؤقتة من ملف TS واحد */
     function makeSingleM3U8(tsUrl){
-      const TARGET=36000; /* 10 ساعات تقريبًا */
+      const TARGET = 36000; // نحو 10 ساعات
       return [
         '#EXTM3U',
         '#EXT-X-VERSION:3',
