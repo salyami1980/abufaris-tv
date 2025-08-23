@@ -205,7 +205,6 @@
       const id=a.getAttribute('href').split(':')[1];
       const url=STREAMS[id]; if(!url){ alert('لا يوجد رابط'); return; }
       titleEl.textContent=a.getAttribute('aria-label')||('قناة '+id);
-      openExt.href=url;
       playUrl(url);
     });
 
