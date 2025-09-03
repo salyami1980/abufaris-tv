@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-  <title>القنوات الرياضية – TV (خارجي)</title>
+  <title>القنوات الرياضية – VLC فقط</title>
   <style>
     :root{ --safe-pad:32px; --radius:22px; --focus-ring:5px; --accent:#ffc107; --v-gap:16px; --max-w:600px; }
     @media (min-width:2560px){ :root{ --safe-pad:44px; --max-w:1100px; } }
@@ -25,16 +25,14 @@
     .banner{ pointer-events:none; }
     footer{ text-align:center; margin-top:20px; opacity:.9; font-weight:700; font-size:clamp(16px,2vw,22px); }
     main{ width:100%; scroll-behavior:auto; overscroll-behavior:contain; }
-    a,.tile{ -webkit-tap-highlight-color: rgba(0,0,0,0); }/* شريط تنبيه صغير للفallback */
-.toast{position:fixed;inset-inline:0;bottom:12px;margin:auto;width:min(92%,700px);background:#333;color:#fff;padding:10px 14px;border-radius:12px;text-align:center;display:none}
-
+    a,.tile{ -webkit-tap-highlight-color: rgba(0,0,0,0); }
   </style>
 </head>
 <body>
   <div class="page">
     <header>
-      <h1>القنوات الرياضية – بث خارجي</h1>
-      <div class="sub">اختر القناة وسيتم فتح الرابط في VLC أو أي مشغّل خارجي</div>
+      <h1>القنوات الرياضية – VLC فقط</h1>
+      <div class="sub">اضغط على القناة لفتحها مباشرة في تطبيق VLC على الجوال</div>
     </header><main>
   <div class="stack" id="stack" role="list">
     <!-- لافتة افتتاحية -->
@@ -107,7 +105,7 @@
 
 <footer>Abu Faris TV Sport</footer>
 
-  </div>  <!-- Toast -->  <div class="toast" id="toast"></div>  <script>
+  </div>  <script>
     // ===== روابط القنوات (الأصلية) =====
     const RAW = {
       1:"http://storatv.com/live/0543539887/2280625079/483688.m3u8",
@@ -140,9 +138,9 @@
       28:"http://storatv.com/live/0543539887/2280625079/763550.m3u8"
     };
 
-    // ===== خيار (اختياري): استخدام بروكسي Cloudflare Worker لو احتاجت القنوات Referer =====
+    // خيار بروكسي لتجاوز الـ Referer إن لزم
     const PROXY_ORIGIN = 'https://abufaris.salyami1980.workers.dev';
-    const useProxy = true; // غيّرها إلى false إذا أردت الرابط الأصلي مباشرة
+    const useProxy = true; // غيّرها إلى false لو أردت الروابط الأصلية
     const prox = (u) => `${PROXY_ORIGIN}/?url=${encodeURIComponent(u)}&ref=${encodeURIComponent('http://storatv.com/')}`;
 
     function getPlayableUrl(id){
@@ -151,35 +149,46 @@
       return useProxy ? prox(raw) : raw;
     }
 
-    // ===== فتح في VLC/مشغّل خارجي =====
-    function openInExternal(url, title){
+    // فتح حصري في VLC (جوال فقط)
+    function openInVLC(url, title){
       const ua = navigator.userAgent || '';
       const isAndroid = /Android/i.test(ua);
       const isiOS = /iPhone|iPad|iPod/i.test(ua);
 
-      // روابط مخصصة لـ VLC
-      const vlcScheme1 = `vlc://${url}`; // يعمل غالبًا على أندرويد و iOS
-      const vlcScheme2 = `vlc-x-callback://x-callback-url/stream?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title||'Stream')}`; // iOS
-
-      // فallback: فتح الرابط المباشر ليختار النظام المشغّل المناسب
-      const direct = url;
-
-      // نحاول أولًا بروتوكول VLC، ثم نسقط إلى الرابط المباشر إذا لم يكن VLC مثبتًا
-      let triedDirect = false;
-      const t = setTimeout(()=>{
-        if(!triedDirect){ window.location.href = direct; triedDirect = true; showToast('يتم فتح الرابط بالمشغّل الافتراضي…'); }
-      }, 1100);
-
-      const attempt = isiOS ? vlcScheme2 : vlcScheme1;
-      try {
-        window.location.href = attempt;
-      } catch(e){
-        clearTimeout(t);
-        window.location.href = direct;
+      if (isiOS){
+        const deeplink = `vlc-x-callback://x-callback-url/stream?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title||'Stream')}`;
+        const timer = setTimeout(()=>{
+          alert('يبدو أن VLC غير مُثبت على جهازك. ثبّت VLC ثم أعد المحاولة.');
+        }, 1200);
+        try{ window.location.href = deeplink; }catch{ clearTimeout(timer); }
+        return;
       }
+
+      if (isAndroid){
+        try {
+          const u = new URL(url);
+          const intent = `intent://${u.host}${u.pathname}${u.search}` +
+                         `#Intent;scheme=${u.protocol.replace(':','')};` +
+                         `package=org.videolan.vlc;end`;
+          const timer = setTimeout(()=>{
+            try{ window.location.href = `vlc://${url}`; }catch(e){}
+            setTimeout(()=>{
+              if (confirm('VLC غير مُثبت. هل تريد فتح صفحة التثبيت في المتجر؟')){
+                window.location.href = 'market://details?id=org.videolan.vlc';
+              }
+            }, 800);
+          }, 1000);
+          window.location.href = intent;
+        } catch(e){
+          alert('تعذّر فتح VLC. تأكّد من تثبيته ثم أعد المحاولة.');
+        }
+        return;
+      }
+
+      alert('هذا الرابط مُصمّم للعمل على الجوال مع تطبيق VLC فقط.');
     }
 
-    // ===== تعامل مع النقر على البطاقات =====
+    // التعامل مع النقر على البطاقات
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a.tile.link'); if(!a) return;
       e.preventDefault();
@@ -187,14 +196,10 @@
       const url = getPlayableUrl(id);
       if(!url){ alert('لا يوجد رابط'); return; }
       const title = a.getAttribute('aria-label') || ('قناة ' + id);
-      openInExternal(url, title);
+      openInVLC(url, title);
     });
 
-    // ===== تحسين التنقّل بالريموت =====
+    // تحسين أولي للتركيز بالريموت
     (function () { const first = document.querySelector('.tile.link'); if (first){ first.focus({preventScroll:true}); first.scrollIntoView({block:'center'}); } })();
-
-    // ===== رسالة صغيرة =====
-    const toast = document.getElementById('toast');
-    function showToast(msg){ toast.textContent = msg; toast.style.display='block'; setTimeout(()=> toast.style.display='none', 2500); }
   </script></body>
 </html>
